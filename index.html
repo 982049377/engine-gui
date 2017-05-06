@@ -7,20 +7,11 @@
 </head>
 
 <body>
-    <h1>Hello World!</h1>
-    We are using node
+    <canvas width="500" , height="500" ,id="bookstore"></canvas>
     <script>
-        document.write(process.versions.node)
-    </script>, Chrome
-    <script>
-        document.write(process.versions.chrome)
-    </script>, and Electron
-    <script>
-        document.write(process.versions.electron)
-
-
-        let a = require('./lib/renderer/a.js')
-        a.a();
+        document.write(process.versions.electron);
+        let books = require('./lib/renderer/a.js');
+        books.run();
     </script>
 </body>
 
