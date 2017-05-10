@@ -1,8 +1,9 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
+
 export let run = () => {
-    let canvas = document.getElementById("bookstore") as HTMLCanvasElement;
+    let canvas = document.getElementById("books") as HTMLCanvasElement;
     let stage = engine.run(canvas);
 
     let date: any;
@@ -30,15 +31,9 @@ export let run = () => {
             }
         }
     }
-
-    //加入舞台
-    let y =0;
-    for (var bookitem of bookitems) {
-        bookitem.x=0;
-        bookitem.y=y;
-        y+=5;
-        stage.addChild(bookitem);
-    }
+    var bookstore: BookStore = BookStore.getIntance();
+    bookstore.bookItemList = bookitems;
+    stage.addChild(bookstore);
 }
 
 class bookResource {
@@ -64,3 +59,66 @@ class bookItem extends engine.DisplayObjectContainer {
 
 
 }
+class BookStore extends engine.DisplayObjectContainer {
+    bookItemList: bookItem[] = [];
+    private static instance: BookStore;
+    constructor() {
+        super();
+    }
+    static getIntance() {
+        if (BookStore.instance == null) {
+            return new BookStore();
+        } else {
+            return BookStore.instance;
+        }
+    }
+
+    renovatelist() {
+        let y = 0;
+        for (var bookitem of this.bookItemList) {
+            bookitem.x = 0;
+            bookitem.y = y;
+            y += 5;
+            this.addChild(bookitem);
+        }
+    }
+
+    addBook(bookitem: bookItem) {
+        if (!this.hasBookItem(bookitem)) {
+            this.bookItemList.push(bookitem);
+        }
+        this.renovatelist();
+    }
+    sliceBook(bookitem: bookItem) {
+        var index = this.bookItemList.indexOf(bookitem);
+        if (index == -1) {
+            console.error("没有这本书");
+            return;
+        }
+        this.bookItemList.splice(index);
+        this.renovatelist();
+    }
+    changeBook(oldBookItem: bookItem, newBookItem: bookItem) {
+        if (this.hasBookItem(oldBookItem)) {
+            var oldindex = this.bookItemList.indexOf(oldBookItem);
+            this.bookItemList.splice(oldindex, 1, newBookItem);
+        } else {
+            this.addBook(newBookItem);
+        }
+        this.renovatelist();
+    }
+
+    private hasBookItem(bookitem: bookItem) {
+        if (this.bookItemList.indexOf(bookitem) == -1)
+            return false;
+        else
+            return true;
+    }
+}
+
+
+
+
+// export function run (){
+//     alert("Hello world");
+// }
