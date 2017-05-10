@@ -45,8 +45,9 @@ export let run = () => {
     }
     stage.touchEnable = true;
 
-    
-    ///因为删除把第0项删了所以下面消失了
+
+    ///因为删除把第0项删了，所以下面消失了
+
     bookstore.bookItemList[0].addOptionBar();
     // bookstore.bookItemList = bookitems;
     stage.addChild(bookstore);
