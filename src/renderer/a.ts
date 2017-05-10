@@ -3,12 +3,13 @@ import * as fs from 'fs';
 
 
 export let run = () => {
-    let canvas = document.getElementById("books") as HTMLCanvasElement;
+    let canvas = document.getElementById("app") as HTMLCanvasElement;
     let stage = engine.run(canvas);
 
     let date: any;
     let bookArry: bookResource[] = []
     let bookitems: bookItem[] = [];
+    var bookstore: BookStore = BookStore.getIntance();
 
     let projectUserPck = path.resolve(__dirname, "../../");
     let configPath = path.join(projectUserPck, "date.config")
@@ -24,15 +25,16 @@ export let run = () => {
             alert("解析JSON文件出现问题");
         }
         if (date) {
-            bookArry = date.reource;
+            bookArry = date.resource;
             for (var i = 0; i < bookArry.length; i++) {
                 let bookitem = new bookItem(bookArry[i].name, bookArry[i].id, i);
-                bookitems.push(bookitem);
+                // bookitems.push(bookitem);
+                bookstore.addBook(bookitem);
             }
         }
     }
-    var bookstore: BookStore = BookStore.getIntance();
-    bookstore.bookItemList = bookitems;
+
+    // bookstore.bookItemList = bookitems;
     stage.addChild(bookstore);
 }
 
@@ -51,13 +53,13 @@ class bookItem extends engine.DisplayObjectContainer {
     desc: engine.TextField;
     constructor(bookname: string, id: string, index: number) {
         super();
-        this.book = new bookResource(name, id);
+        this.book = new bookResource(bookname, id);
         this.index = index;
         this.desc = new engine.TextField();
-        this.desc.text = name + "   " + id;
+        this.desc.text = bookname + "   " + id;
+        alert(this.desc.text);
+        this.addChild(this.desc);
     }
-
-
 }
 class BookStore extends engine.DisplayObjectContainer {
     bookItemList: bookItem[] = [];
@@ -74,11 +76,12 @@ class BookStore extends engine.DisplayObjectContainer {
     }
 
     renovatelist() {
-        let y = 0;
+        this.removeAllChild();
+        let y = 25;
         for (var bookitem of this.bookItemList) {
             bookitem.x = 0;
             bookitem.y = y;
-            y += 5;
+            y += 25;
             this.addChild(bookitem);
         }
     }
@@ -119,6 +122,7 @@ class BookStore extends engine.DisplayObjectContainer {
 
 
 
-// export function run (){
-//     alert("Hello world");
+// export function run() {
+//     var canvas = document.getElementById("app") as HTMLCanvasElement;
+//     alert(canvas);
 // }
