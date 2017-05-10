@@ -9,7 +9,7 @@ export let run = () => {
     let date: any;
     let bookArry: bookResource[] = []
     let bookitems: bookItem[] = [];
-    var bookstore: BookStore = BookStore.getIntance();
+    var bookstore: BookStore = BookStore.getInstance();
 
     engine.ResourceManager.addImageJson("loading.png", "loading.png", 50, 50);
     engine.ResourceManager.addImageJson("Add.png", "Add.png", 50, 50);
@@ -43,6 +43,10 @@ export let run = () => {
             }
         }
     }
+    stage.touchEnable = true;
+
+    
+    ///因为删除把第0项删了所以下面消失了
     bookstore.bookItemList[0].addOptionBar();
     // bookstore.bookItemList = bookitems;
     stage.addChild(bookstore);
@@ -65,6 +69,7 @@ class bookItem extends engine.DisplayObjectContainer {
     constructor(bookname: string, id: string, index: number) {
         super();
         this.optionBar = new bookOptionBar();
+        this.optionBar.touchEnable = true;
         this.optionBar.y = 300;
         this.book = new bookResource(bookname, id);
         this.index = index;
@@ -111,20 +116,20 @@ class bookOptionBar extends engine.DisplayObjectContainer {
         this.addpic.touchEnable = true;
         this.addpic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
             var book: bookItem = new bookItem("book04", "04", 4);
-            BookStore.getIntance().addBook(book);
+            BookStore.getInstance().addBook(book);
         });
 
         this.slipic.touchEnable = true;
         this.slipic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
-            var book: bookItem = new bookItem("book04", "04", 4);
-            BookStore.getIntance().sliceBook(book);
+            var book: bookItem = new bookItem("book02", "02", 2);
+            BookStore.getInstance().sliceBook(book);
         });
 
         this.changepic.touchEnable = true;
         this.changepic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
             var newBook: bookItem = new bookItem("book04", "04", 4);
-            var oldBook = BookStore.getIntance().bookItemList[0];
-            BookStore.getIntance().changeBook(oldBook, newBook);
+            var oldBook = BookStore.getInstance().bookItemList[0];
+            BookStore.getInstance().changeBook(oldBook, newBook);
         });
     }
 }
@@ -136,12 +141,11 @@ class BookStore extends engine.DisplayObjectContainer {
     constructor() {
         super();
     }
-    static getIntance() {
-        if (BookStore.instance == null) {
-            return new BookStore();
-        } else {
-            return BookStore.instance;
-        }
+    static getInstance() {
+        if (BookStore.instance == null)
+            BookStore.instance = new BookStore()
+        return BookStore.instance;
+
     }
 
     renovatelist() {
@@ -152,6 +156,7 @@ class BookStore extends engine.DisplayObjectContainer {
             bookitem.y = y;
             y += 25;
             this.addChild(bookitem);
+            bookitem.touchEnable = true;
         }
     }
 
@@ -161,6 +166,7 @@ class BookStore extends engine.DisplayObjectContainer {
         }
         this.renovatelist();
     }
+    ///删除得自己写一下比较逻辑，有问题
     sliceBook(bookitem: bookItem) {
         var index = this.bookItemList.indexOf(bookitem);
         if (index == -1) {

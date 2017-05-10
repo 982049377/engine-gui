@@ -1481,8 +1481,8 @@ var engine;
             rect.y = 0;
             // rect.width = this.img.width;
             // rect.height = this.img.height;
-            rect.width = this.width;
-            rect.height = this.height;
+            rect.width = this.img.width;
+            rect.height = this.img.height;
             if (rect.isPointInRectangle(pointInLocalMatrix))
                 return this;
             else
