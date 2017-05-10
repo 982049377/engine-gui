@@ -1565,6 +1565,7 @@ var engine;
         window.onmousedown = function (down) {
             var downX = down.x - 3;
             var downY = down.y - 3;
+            console.log("downX" + downX + "  " + "downY" + downY);
             var touchEvent = new engine.MyTouchEvent(downX, downY, engine.MyTouchEvent.TouchDown);
             var downChain = stage.hitTest(downX, downY);
             stage.$dispatchPropagationEvent(downChain, touchEvent, true);
@@ -1572,6 +1573,7 @@ var engine;
             window.onmouseup = function (up) {
                 var upX = down.x - 3;
                 var upY = down.y - 3;
+                console.log("upX" + upX + "  " + "upY" + upY);
                 var upChain = stage.hitTest(upX, upY);
                 if (downChain[0] == upChain[0]) {
                     var touchEvent = new engine.MyTouchEvent(downX, downY, engine.MyTouchEvent.TouchClick);
