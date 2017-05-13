@@ -1579,6 +1579,7 @@ var engine;
                     var touchEvent = new engine.MyTouchEvent(downX, downY, engine.MyTouchEvent.TouchClick);
                     var ChickChain = stage.hitTest(upX, upY);
                     stage.$dispatchPropagationEvent(ChickChain, touchEvent, true);
+                    return;
                     // stage.dispatchEvent(ChickChain, touchEvent);
                 }
                 stage.$dispatchPropagationEvent(upChain, touchEvent, true);
