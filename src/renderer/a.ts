@@ -22,42 +22,83 @@ export let run = () => {
     engine.ResourceLoad.load("Change.png", (data) => { });
     engine.ResourceLoad.load("ret.png", (data) => { });
 
-    // let projectUserPick = path.resolve(__dirname, "../../../canvas/engine_test");
+    let projectUserPick = path.resolve(__dirname, "../../../canvas/engine_test");
+
     // console.log(projectUserPick);
-    // if (!validProject(projectUserPick)) {
-    //     alert("不是一个有效的Unity项目");
-    // }
-    // else {
-    //     let childe_process = cp.spawn("engine", ['run', projectUserPick]);
-    //     childe_process.stdout.addListener("data", data => {
-    //         console.log(data.toString());
-    //         if (data.toString().indexOf("Server listening to") >= 0) {
-    //             let iframe = document.getElementById("iframe") as HTMLIFrameElement;
-    //             iframe.src = "http://localhost:1337/index.html";
-    //         }
-    //     })
-    //     childe_process.stderr.addListener("data", data => {
-    //         console.log(data.toString());
-    //     })
-    //     childe_process.addListener("close", () => { 
+    if (!validProject(projectUserPick)) {
+        alert("不是一个有效的Unity项目");
+    }
+    else {
+        let child_process = cp.exec("engine " + 'run ' + projectUserPick);
+        // let child_process = cp.spawn("engine ", ['run ', projectUserPick]);
+        let iframe: HTMLIFrameElement;
+        child_process.stdout.addListener("data", data => {
+            console.log(data.toString());
+            engine.MysetTimeout(() => {
+                if (data.toString().indexOf("Server listening to") >= 0) {
+                    iframe = document.getElementById("iframe") as HTMLIFrameElement;
+                    iframe.src = "http://localhost:1337/index.html";
+                    // iframe.src = "http://localhost:1341";
+                }
+            }, 500);
+        })
+        child_process.stderr.addListener("data", data => {
+            console.log(data.toString());
+        })
+        child_process.addListener("close", () => {
+            // alert("close");
+            // process.exit(code());
+        })
 
-    //     })
-    // }
 
-    // function validProject(projectUserPick:string){
-    //     return true;
-    //     // var configPath = path.join(projectUserPick,"engine.json")
-    //     // return fs.existsSync(configPath)?true:false;
-    // }
+        // process.addListener("exit", () => {
+        //     child_process = cp.exec("Ctrl+C");
+        //     child_process = cp.exec("Y");
+        // })
+        // let id = child_process.pid;
+        // let code = () => {
+        //     process.kill(id);
+        //     alert("kill child_process");
+        //     return 0;
+        // }
+
+    }
+//输入的是项目路径
+    function validProject(projectUserPick: string) {
+        // return true;
+        var ValidCredential = path.join(projectUserPick, "engine.json")
+        //文件存在
+        if (!fs.existsSync(ValidCredential)) {
+            alert("不是一个Unity项目");
+            return false;
+        }
+        //文件是否合法
+        let dateContent = fs.readFileSync(ValidCredential, "UTF-8");
+        try {
+            date = JSON.parse(dateContent);
+        }
+        catch (e) {
+            alert("解析JSON文件出现问题");
+        }
+        if (date) {
+            let enginedir: string = date.engine;
+            if (!enginedir) {
+                alert("不是一个Unity项目")
+                return false;
+            }
+        }
+        return true;
+        // return fs.existsSync(configPath) ? true : false;
+    }
 
 
-    let projectUserPck = path.resolve(__dirname, "../../");
-    let configPath = path.join(projectUserPck, "date.config")
-
-    if (!fs.existsSync(configPath))
+    let booksStore = path.resolve(__dirname, "../../");
+    let configBooksStorePath = path.join(booksStore, "date.config")
+    // alert(booksStore);
+    if (!validProject(booksStore))
         alert("不是有效路径")
     else {
-        let dateContent = fs.readFileSync(configPath, "UTF-8");
+        let dateContent = fs.readFileSync(configBooksStorePath, "UTF-8");
         try {
             date = JSON.parse(dateContent);
         }
@@ -218,8 +259,7 @@ class BookStore extends engine.DisplayObjectContainer {
         let data: string = "{\"resource\":[\n";
         for (let element of this.bookItemList) {
             data = data.concat("{\n \"name\":\"" + element.book.name + "\",\n\"id\":\"" + element.book.id + "\"\n}");
-            if (this.hasBookItem(element) == this.bookItemList.length - 1)
-            {
+            if (this.hasBookItem(element) == this.bookItemList.length - 1) {
                 break;
             }
             data = data.concat(",\n")
@@ -249,9 +289,9 @@ class BookStore extends engine.DisplayObjectContainer {
         this.renovateDisplayList();
     }
     changeBook(oldBookItem: bookItem, newBookItem: bookItem) {
-         if (this.hasBookItem(newBookItem) != -1) {
-           alert("新书已经在目录中");
-           return;
+        if (this.hasBookItem(newBookItem) != -1) {
+            alert("新书已经在目录中");
+            return;
         }
         if (this.hasBookItem(oldBookItem) != -1) {
             var oldindex = this.hasBookItem(oldBookItem);
