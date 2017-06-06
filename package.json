@@ -11,5 +11,16 @@
   "devDependencies": {
     "@types/electron": "^1.4.37",
     "@types/node": "^7.0.13"
+  },
+  "dependencies": {
+    "antd": "^2.7.1",
+    "@types/electron": "^1.4.33",
+    "@types/jquery": "^2.0.41",
+    "@types/node": "^7.0.5",
+    "@types/react-dom": "^0.14.23",
+    "react": "^15.3.1",
+    "react-dom": "^15.3.1",
+    "jquery": "^3.2.1",
+    "prop-types": "15.5.10"
   }
 }

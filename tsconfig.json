@@ -2,9 +2,11 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "es5",
+        "jsx": "react",
         "noImplicitAny": false,
         "sourceMap": false,
         "outDir": "lib",
+        "experimentalDecorators": true,
         "lib": [
             "es5",
             "dom",
@@ -13,6 +15,7 @@
     },
     "include": [
         "src/**/*.ts",
+        "src/**/*.tsx",
         "engine/**/*.d.ts",
         "node_modules/@types/**/*.d.ts"
     ]

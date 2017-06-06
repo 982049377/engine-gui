@@ -1,14 +1,17 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as cp from "child_process";
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import InputField from '../tsx/Inputt';
 
 export let run = () => {
     let canvas = document.getElementById("app") as HTMLCanvasElement;
     let stage = engine.run(canvas);
 
     let date: any;
-    let bookArry: bookResource[] = []
-    let bookitems: bookItem[] = [];
+    let bookArryDate: bookResource[] = []
+    let bookitems: bookView[] = [];
     var bookstore: BookStore = BookStore.getInstance();
 
     engine.ResourceManager.addImageJson("loading.png", "loading.png", 50, 50);
@@ -63,7 +66,7 @@ export let run = () => {
         // }
 
     }
-//输入的是项目路径
+    //输入的是项目路径
     function validProject(projectUserPick: string) {
         // return true;
         var ValidCredential = path.join(projectUserPick, "engine.json")
@@ -106,15 +109,18 @@ export let run = () => {
             alert("解析JSON文件出现问题");
         }
         if (date) {
-            bookArry = date.resource;
-            for (var i = 0; i < bookArry.length; i++) {
-                let bookitem = new bookItem(bookArry[i].name, bookArry[i].id, i);
+            bookArryDate = date.resource;
+            let bookList = [];
+            for (var i = 0; i < bookArryDate.length; i++) {
+                var index: number = parseInt(bookArryDate[i].id);
+                let bookitem = new bookView(bookArryDate[i].name, bookArryDate[i].id, index);
                 // bookitems.push(bookitem);
-                bookstore.addBook(bookitem);
+                bookList.push(bookitem);
+                // bookstore.addBook(bookitem);
             }
+            bookstore.addBookList(bookList);
         }
     }
-
 
     stage.touchEnable = true;
 
@@ -124,9 +130,12 @@ export let run = () => {
     // bookstore.bookItemList[0].addOptionBar();
     // bookstore.bookItemList = bookitems;
     stage.addChild(bookstore);
+    ReactDOM.render(
+        <InputField />, document.getElementById('inputtt')
+    )
 }
 
-class bookResource {
+export class bookResource {
     name: string;
     id: string;
     constructor(name: string, id: string) {
@@ -135,30 +144,57 @@ class bookResource {
     }
 }
 
-class bookItem extends engine.DisplayObjectContainer {
-    book: bookResource;
+export class bookView extends engine.DisplayObjectContainer {
+    book: bookResource;//数据层
     index: number;
-    desc: engine.TextField;
+    // desc: engine.TextField;
     optionBar: bookOptionBar;
-    constructor(bookname: string, id: string, index: number) {
+    constructor(bookname: string, id: string, index: number, desc?: string) {
         super();
         this.optionBar = new bookOptionBar();
         this.optionBar.touchEnable = true;
-        this.optionBar.y = 300;
+        this.optionBar.y = 300 - this.y;
         this.book = new bookResource(bookname, id);
         this.index = index;
-        this.desc = new engine.TextField();
-        this.desc.text = bookname + "   " + id;
-        // alert(this.desc.text);
-        this.addChild(this.desc);
-        this.desc.touchEnable = true;
-        this.desc.addEventListener(engine.MyTouchEvent.TouchClick, () => {
-            if (!BookStore.hasBookOptionBar) {
-                BookStore.hasBookOptionBar = true;
-                this.addOptionBar();
-            }
-        });
+
+        this.refreshView(bookname, id, desc);
+
     }
+
+    refreshView(bookname: string, id: string, desc?: string) {
+        var BookNameView = new engine.TextField();
+        BookNameView.text = "name:" + bookname;
+        var BookIDView = new engine.TextField();
+        BookIDView.text = "id:" + id;
+        var BookDescView = new engine.TextField();
+        if (desc == undefined || desc == null)
+            BookDescView.text = "Descript:" + bookname + "   " + id;
+        else
+            BookDescView.text = "Descript:" + desc;
+
+        BookNameView.x = 0;
+        BookIDView.x = 50;
+        BookDescView.x = 0;
+        BookDescView.y = 8;
+
+        this.addChild(BookNameView);
+        this.addChild(BookIDView);
+        this.addChild(BookDescView);
+
+        BookNameView.touchEnable = true;
+        BookNameView.addEventListener(engine.MyTouchEvent.TouchClick, this.Click);
+        BookIDView.touchEnable = true;
+        BookIDView.addEventListener(engine.MyTouchEvent.TouchClick, this.Click);
+        BookDescView.touchEnable = true;
+        BookDescView.addEventListener(engine.MyTouchEvent.TouchClick, this.Click);
+    }
+    Click = () => {
+        if (!BookStore.hasBookOptionBar) {
+            BookStore.hasBookOptionBar = true;
+            this.addOptionBar();
+        }
+    }
+
     addOptionBar() {
         this.addChild(this.optionBar);
     }
@@ -199,21 +235,23 @@ class bookOptionBar extends engine.DisplayObjectContainer {
     addevent() {
         this.addpic.touchEnable = true;
         this.addpic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
-            var book: bookItem = new bookItem("book04", "04", 4);
-            BookStore.getInstance().addBook(book);
+            // var book: bookItem = new bookItem("book04", "04", 4);
+            // BookStore.getInstance().addBook(book);
+            BookStore.hasBookOptionBar = false;
         });
 
         this.slipic.touchEnable = true;
         this.slipic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
-            var book: bookItem = new bookItem("book02", "02", 2);
+            var book: bookView = new bookView("book02", "02", 2);
             BookStore.getInstance().sliceBook(book);
         });
 
         this.changepic.touchEnable = true;
         this.changepic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
-            var newBook: bookItem = new bookItem("book05", "05", 5);
+            var newBook: bookView = new bookView("book05", "05", 5);
             var oldBook = BookStore.getInstance().bookItemList[0];
             BookStore.getInstance().changeBook(oldBook, newBook);
+            BookStore.hasBookOptionBar = false;
         });
 
 
@@ -226,8 +264,8 @@ class bookOptionBar extends engine.DisplayObjectContainer {
     }
 }
 
-class BookStore extends engine.DisplayObjectContainer {
-    bookItemList: bookItem[] = [];
+export class BookStore extends engine.DisplayObjectContainer {
+    bookItemList: bookView[] = [];
     private static instance: BookStore;
     public static hasBookOptionBar: boolean = false;
     constructor() {
@@ -245,8 +283,7 @@ class BookStore extends engine.DisplayObjectContainer {
         let y = 25;
         for (var bookitem of this.bookItemList) {
             bookitem.x = 0;
-            bookitem.y = y;
-            y += 25;
+            bookitem.y = bookitem.index * 50;
             this.addChild(bookitem);
             bookitem.touchEnable = true;
         }
@@ -272,14 +309,26 @@ class BookStore extends engine.DisplayObjectContainer {
         }
     }
 
-    addBook(bookitem: bookItem) {
+    addBook(bookitem: bookView) {
         if (this.hasBookItem(bookitem) == -1) {
             this.bookItemList.push(bookitem);
         }
         this.renovateDisplayList();
     }
+    ///还有逻辑要完善
+    addBookList(bookitems: bookView[]) {
+        if (this.bookItemList == [])
+            this.bookItemList = bookitems;
+        else {
+            bookitems.forEach(bookitemselement => {
+                if (this.hasBookItem(bookitemselement) == -1)
+                    this.addBook(bookitemselement);
+            });
+        }
+        this.renovateDisplayList();
+    }
     ///删除得自己写一下比较逻辑，有问题
-    sliceBook(bookitem: bookItem) {
+    sliceBook(bookitem: bookView) {
         var index = this.hasBookItem(bookitem);
         if (index == -1) {
             console.error("没有这本书");
@@ -288,7 +337,16 @@ class BookStore extends engine.DisplayObjectContainer {
         this.bookItemList.splice(index, 1);
         this.renovateDisplayList();
     }
-    changeBook(oldBookItem: bookItem, newBookItem: bookItem) {
+
+    addOrChangeBook(bookitem: bookView) {
+        var index = this.hasBookItem(bookitem);
+        if (index == -1)
+            this.addBook(bookitem);
+        else
+            this.changeBook(bookitem, this.bookItemList[index]);
+    }
+
+    changeBook(oldBookItem: bookView, newBookItem: bookView) {
         if (this.hasBookItem(newBookItem) != -1) {
             alert("新书已经在目录中");
             return;
@@ -302,7 +360,7 @@ class BookStore extends engine.DisplayObjectContainer {
         this.renovateDisplayList();
     }
 
-    private hasBookItem(bookitem: bookItem): number {
+    private hasBookItem(bookitem: bookView): number {
         var index = 0;
         var Isfind = false;
         this.bookItemList.forEach(element => {
