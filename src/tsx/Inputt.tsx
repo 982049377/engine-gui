@@ -9,7 +9,7 @@ class InputField extends React.Component<any, any>{
         this.state = {
             name: '',
             id: '',
-            index: -1,
+            // index: -1,
             desc: '书籍'
         }
     }
@@ -23,18 +23,13 @@ class InputField extends React.Component<any, any>{
             name: event.target.value
         })
     }
-    Changeindex = (event) => {
-        this.setState({
-            index: event.target.value
-        })
-    }
     Changedesc = (event) => {
         this.setState({
             desc: event.target.value
         })
     }
     SubmitInfor = () => {
-        var bookitem = new bookView(this.state.name, this.state.id, this.state.index, this.state.desc);
+        var bookitem = new bookView(this.state.name, this.state.id,null, this.state.desc);
         this._bookStore.addOrChangeBook(bookitem);
     }
     timerout: any;
@@ -66,7 +61,6 @@ class InputField extends React.Component<any, any>{
                 <div>
                     <li>BookName:{this.state.name}</li><input type='text' value={this.state.name} onChange={this.ChangeName.bind(this)} />
                     <li>BookID:{this.state.id}</li><input type='text' value={this.state.id} onChange={this.ChangeId} />
-                    <li>BookIndex:{this.state.index}</li><input type='text' value={this.state.index} onChange={this.Changeindex} />
                     <li>BookDesc:{this.state.desc}</li><input type='text' value={this.state.desc} onChange={this.Changedesc} />
                     <button value="submit" style={{ width: 50, height: 50 }} onClick={this.SubmitInfor} ></button>
                 </div>

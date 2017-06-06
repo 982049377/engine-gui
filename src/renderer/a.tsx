@@ -12,7 +12,7 @@ export let run = () => {
     let date: any;
     let bookArryDate: bookResource[] = []
     let bookitems: bookView[] = [];
-    var bookstore: BookStore = BookStore.getInstance();
+
 
     engine.ResourceManager.addImageJson("loading.png", "loading.png", 50, 50);
     engine.ResourceManager.addImageJson("Add.png", "Add.png", 50, 50);
@@ -24,6 +24,8 @@ export let run = () => {
     engine.ResourceLoad.load("Slice.png", (data) => { });
     engine.ResourceLoad.load("Change.png", (data) => { });
     engine.ResourceLoad.load("ret.png", (data) => { });
+
+    var bookstore: BookStore = BookStore.getInstance();
 
     let projectUserPick = path.resolve(__dirname, "../../../canvas/engine_test");
 
@@ -135,7 +137,13 @@ export let run = () => {
     )
 }
 
+enum BookType {
+    bookResource = 1,
+    bookView = 2
+}
+
 export class bookResource {
+    kind = BookType.bookResource;
     name: string;
     id: string;
     constructor(name: string, id: string) {
@@ -145,17 +153,19 @@ export class bookResource {
 }
 
 export class bookView extends engine.DisplayObjectContainer {
+    kind = BookType.bookView;
     book: bookResource;//数据层
     index: number;
     // desc: engine.TextField;
-    optionBar: bookOptionBar;
-    constructor(bookname: string, id: string, index: number, desc?: string) {
+    // optionBar: bookOptionBar;
+    constructor(bookname: string, id: string, index?: number, desc?: string) {
         super();
-        this.optionBar = new bookOptionBar();
-        this.optionBar.touchEnable = true;
-        this.optionBar.y = 300 - this.y;
+        // this.optionBar = new bookOptionBar();
+        // this.optionBar.touchEnable = true;
+        // this.optionBar.y = 300 ;
         this.book = new bookResource(bookname, id);
-        this.index = index;
+        if (index != undefined && index != null)
+            this.index = index;
 
         this.refreshView(bookname, id, desc);
 
@@ -190,20 +200,21 @@ export class bookView extends engine.DisplayObjectContainer {
     }
     Click = () => {
         if (!BookStore.hasBookOptionBar) {
-            BookStore.hasBookOptionBar = true;
-            this.addOptionBar();
+            // BookStore.hasBookOptionBar = true;
+            BookStore.getInstance().addOptionBar(this.book);
         }
     }
 
-    addOptionBar() {
-        this.addChild(this.optionBar);
-    }
+    // addOptionBar() {
+    //     this.addChild(this.optionBar);
+    // }
 }
 class bookOptionBar extends engine.DisplayObjectContainer {
     addpic: engine.Bitmap;
     slipic: engine.Bitmap;
     changepic: engine.Bitmap;
     retpic: engine.Bitmap;
+    private _book: bookResource;
     constructor() {
         super();
         this.addpic = new engine.Bitmap();
@@ -232,33 +243,36 @@ class bookOptionBar extends engine.DisplayObjectContainer {
         this.addevent();
 
     }
+    setbook(book: bookResource) {
+        this._book = book;
+    }
     addevent() {
         this.addpic.touchEnable = true;
         this.addpic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
             // var book: bookItem = new bookItem("book04", "04", 4);
             // BookStore.getInstance().addBook(book);
-            BookStore.hasBookOptionBar = false;
+            BookStore.hasBookOptionBar = true;
         });
 
         this.slipic.touchEnable = true;
         this.slipic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
-            var book: bookView = new bookView("book02", "02", 2);
-            BookStore.getInstance().sliceBook(book);
+            // var book: bookView = new bookView("book02", "02", 2);
+            BookStore.getInstance().sliceBook(this._book);
+            BookStore.hasBookOptionBar = false;
         });
 
         this.changepic.touchEnable = true;
         this.changepic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
-            var newBook: bookView = new bookView("book05", "05", 5);
-            var oldBook = BookStore.getInstance().bookItemList[0];
-            BookStore.getInstance().changeBook(oldBook, newBook);
-            BookStore.hasBookOptionBar = false;
+            // var newBook: bookView = new bookView("book05", "05", 5);
+            // var oldBook = BookStore.getInstance().bookItemList[0];
+            // BookStore.getInstance().changeBook(oldBook, newBook);
+            BookStore.hasBookOptionBar = true;
         });
 
 
         this.retpic.touchEnable = true;
         this.retpic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
-            var tempbookitem = this.parent as engine.DisplayObjectContainer;
-            tempbookitem.removeChild(this);
+            BookStore.getInstance().removeOptionBar();
             BookStore.hasBookOptionBar = false;
         });
     }
@@ -268,8 +282,19 @@ export class BookStore extends engine.DisplayObjectContainer {
     bookItemList: bookView[] = [];
     private static instance: BookStore;
     public static hasBookOptionBar: boolean = false;
+    public static optionBar: bookOptionBar;
     constructor() {
         super();
+        BookStore.optionBar = new bookOptionBar();
+        BookStore.optionBar.touchEnable = true;
+        BookStore.optionBar.y = 300;
+    }
+    addOptionBar(Book: bookResource) {
+        BookStore.optionBar.setbook(Book);
+        this.addChild(BookStore.optionBar);
+    }
+    removeOptionBar() {
+        this.removeChild(BookStore.optionBar);
     }
     static getInstance() {
         if (BookStore.instance == null)
@@ -284,6 +309,7 @@ export class BookStore extends engine.DisplayObjectContainer {
         for (var bookitem of this.bookItemList) {
             bookitem.x = 0;
             bookitem.y = bookitem.index * 50;
+            console.log(bookitem.index);
             this.addChild(bookitem);
             bookitem.touchEnable = true;
         }
@@ -309,11 +335,75 @@ export class BookStore extends engine.DisplayObjectContainer {
         }
     }
 
-    addBook(bookitem: bookView) {
-        if (this.hasBookItem(bookitem) == -1) {
-            this.bookItemList.push(bookitem);
+    addBook(bookitem: bookView | bookResource) {
+        if (this.hasBookItem(bookitem) != -1) {
+            return;
         }
+        switch (bookitem.kind) {
+            case BookType.bookView:
+                var tempBookView = bookitem as bookView;
+                if ((tempBookView).index == null || (bookitem as bookView).index == undefined)
+                    tempBookView.index = this.getProperIndex();
+                this.bookItemList.push(tempBookView);
+                break;
+            case BookType.bookResource:
+                var book = bookitem as bookResource;
+                var tempBookView = new bookView(book.name, book.id, this.bookItemList.length);
+                this.bookItemList.push(tempBookView);
+                break;
+            default:
+                return;
+        }
+        this.numbers.push(tempBookView.index);
         this.renovateDisplayList();
+    }
+    private numbers = [];
+    getProperIndex() {
+
+        this.insertion_sort(this.numbers);
+
+        var index: number = this.fFindMissedNumber(this.numbers);
+        return index;
+    }
+
+    private _index: number;
+    fFindMissedNumber(list: number[]) {
+        var subListUp: number[] = [];
+        var subListBack: number[] = [];
+        for (var i = 0; i < Math.floor(list.length / 2); i++) {
+            subListUp.push(list[i]);
+        }
+        for (var i = Math.floor(list.length / 2); i < list.length; i++) {
+            subListBack.push(list[i]);
+        }
+        if ((list[list.length - 1] + list[0]) / 2 > list[Math.floor(list.length / 2)]) {
+            if (subListUp[0] + 1 == subListBack[0] && list.length == 2)
+                return subListBack[0] - 2;
+            if (subListBack.length == 1)
+                return this._index < subListBack[0] - 1 ? this._index : subListBack[0] - 1;
+            this._index = this.fFindMissedNumber(subListBack);
+        }
+        if ((list[list.length - 1] + list[0]) / 2 <= list[Math.floor(list.length / 2)]) {
+            if (subListUp[0] + 1 == subListBack[0] && list.length == 2)
+                return subListUp[0] + 2;
+            if (subListUp.length == 1)
+                return this._index < subListUp[0] + 1 ? this._index : subListUp[0] + 1;
+            this._index = this.fFindMissedNumber(subListUp);
+        }
+        return this._index;
+    }
+    insertion_sort(unsorted: number[]) {
+        for (var i = 1; i < unsorted.length; i++) {
+            if (unsorted[i - 1] > unsorted[i]) {
+                var temp = unsorted[i];
+                var j = i;
+                while (j > 0 && unsorted[j - 1] > temp) {
+                    unsorted[j] = unsorted[j - 1];
+                    j--;
+                }
+                unsorted[j] = temp;
+            }
+        }
     }
     ///还有逻辑要完善
     addBookList(bookitems: bookView[]) {
@@ -325,10 +415,13 @@ export class BookStore extends engine.DisplayObjectContainer {
                     this.addBook(bookitemselement);
             });
         }
+        this.bookItemList.forEach(element => {
+            this.numbers.push(element.index)
+        });
         this.renovateDisplayList();
     }
     ///删除得自己写一下比较逻辑，有问题
-    sliceBook(bookitem: bookView) {
+    sliceBook(bookitem: bookView | bookResource) {
         var index = this.hasBookItem(bookitem);
         if (index == -1) {
             console.error("没有这本书");
@@ -338,15 +431,16 @@ export class BookStore extends engine.DisplayObjectContainer {
         this.renovateDisplayList();
     }
 
-    addOrChangeBook(bookitem: bookView) {
+    addOrChangeBook(bookitem: bookView | bookResource) {
         var index = this.hasBookItem(bookitem);
         if (index == -1)
             this.addBook(bookitem);
         else
             this.changeBook(bookitem, this.bookItemList[index]);
+        this.renovateDisplayList();
     }
 
-    changeBook(oldBookItem: bookView, newBookItem: bookView) {
+    changeBook(oldBookItem: bookView | bookResource, newBookItem: bookView) {
         if (this.hasBookItem(newBookItem) != -1) {
             alert("新书已经在目录中");
             return;
@@ -360,11 +454,17 @@ export class BookStore extends engine.DisplayObjectContainer {
         this.renovateDisplayList();
     }
 
-    private hasBookItem(bookitem: bookView): number {
+    private hasBookItem(bookitem: bookView | bookResource): number {
+        if (bookitem.kind == BookType.bookView) {
+            var tempbook = (bookitem as bookView).book;
+        }
+        if (bookitem.kind == BookType.bookResource) {
+            var tempbook = bookitem as bookResource;
+        }
         var index = 0;
         var Isfind = false;
         this.bookItemList.forEach(element => {
-            if (bookitem.book.id == element.book.id) {
+            if (tempbook.id == element.book.id) {
                 Isfind = true;
             }
             if (Isfind) return;
