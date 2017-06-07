@@ -114,8 +114,7 @@ export let run = () => {
             bookArryDate = date.resource;
             let bookList = [];
             for (var i = 0; i < bookArryDate.length; i++) {
-                var index: number = parseInt(bookArryDate[i].id);
-                let bookitem = new bookView(bookArryDate[i].name, bookArryDate[i].id, index);
+                let bookitem = new bookView(bookArryDate[i].name, bookArryDate[i].id, i + 1);
                 // bookitems.push(bookitem);
                 bookList.push(bookitem);
                 // bookstore.addBook(bookitem);
@@ -182,6 +181,8 @@ export class bookView extends engine.DisplayObjectContainer {
         else
             BookDescView.text = "Descript:" + desc;
 
+        // BookNameView.y = 5;
+        // BookIDView.y = 5;
         BookNameView.x = 0;
         BookIDView.x = 50;
         BookDescView.x = 0;
@@ -251,14 +252,15 @@ class bookOptionBar extends engine.DisplayObjectContainer {
         this.addpic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
             // var book: bookItem = new bookItem("book04", "04", 4);
             // BookStore.getInstance().addBook(book);
-            BookStore.hasBookOptionBar = true;
+            // BookStore.hasBookOptionBar = true;
         });
 
         this.slipic.touchEnable = true;
         this.slipic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
             // var book: bookView = new bookView("book02", "02", 2);
+            BookStore.getInstance().removeOptionBar();
             BookStore.getInstance().sliceBook(this._book);
-            BookStore.hasBookOptionBar = false;
+            // BookStore.hasBookOptionBar = false;
         });
 
         this.changepic.touchEnable = true;
@@ -266,20 +268,19 @@ class bookOptionBar extends engine.DisplayObjectContainer {
             // var newBook: bookView = new bookView("book05", "05", 5);
             // var oldBook = BookStore.getInstance().bookItemList[0];
             // BookStore.getInstance().changeBook(oldBook, newBook);
-            BookStore.hasBookOptionBar = true;
+            // BookStore.hasBookOptionBar = true;
         });
 
 
         this.retpic.touchEnable = true;
         this.retpic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
             BookStore.getInstance().removeOptionBar();
-            BookStore.hasBookOptionBar = false;
         });
     }
 }
 
 export class BookStore extends engine.DisplayObjectContainer {
-    bookItemList: bookView[] = [];
+    bookItemList: bookView[];
     private static instance: BookStore;
     public static hasBookOptionBar: boolean = false;
     public static optionBar: bookOptionBar;
@@ -292,9 +293,13 @@ export class BookStore extends engine.DisplayObjectContainer {
     addOptionBar(Book: bookResource) {
         BookStore.optionBar.setbook(Book);
         this.addChild(BookStore.optionBar);
+        BookStore.hasBookOptionBar = true;
+        this.renovateDataList();
     }
     removeOptionBar() {
         this.removeChild(BookStore.optionBar);
+        BookStore.hasBookOptionBar = false;
+        this.renovateDataList();
     }
     static getInstance() {
         if (BookStore.instance == null)
@@ -305,6 +310,8 @@ export class BookStore extends engine.DisplayObjectContainer {
 
     renovateDisplayList() {
         this.removeAllChild();
+        if (BookStore.hasBookOptionBar)
+            this.addChild(BookStore.optionBar)
         let y = 25;
         for (var bookitem of this.bookItemList) {
             bookitem.x = 0;
@@ -359,40 +366,53 @@ export class BookStore extends engine.DisplayObjectContainer {
     }
     private numbers = [];
     getProperIndex() {
-
-        this.insertion_sort(this.numbers);
-
-        var index: number = this.fFindMissedNumber(this.numbers);
+        var index: number = this.findMissedNumber(this.numbers);
+        console.log(index);
+        if (index == -1) index = this.bookItemList.length + 1;
         return index;
     }
 
-    private _index: number;
-    fFindMissedNumber(list: number[]) {
-        var subListUp: number[] = [];
-        var subListBack: number[] = [];
-        for (var i = 0; i < Math.floor(list.length / 2); i++) {
-            subListUp.push(list[i]);
-        }
-        for (var i = Math.floor(list.length / 2); i < list.length; i++) {
-            subListBack.push(list[i]);
-        }
-        if ((list[list.length - 1] + list[0]) / 2 > list[Math.floor(list.length / 2)]) {
-            if (subListUp[0] + 1 == subListBack[0] && list.length == 2)
-                return subListBack[0] - 2;
-            if (subListBack.length == 1)
-                return this._index < subListBack[0] - 1 ? this._index : subListBack[0] - 1;
-            this._index = this.fFindMissedNumber(subListBack);
-        }
-        if ((list[list.length - 1] + list[0]) / 2 <= list[Math.floor(list.length / 2)]) {
-            if (subListUp[0] + 1 == subListBack[0] && list.length == 2)
-                return subListUp[0] + 2;
-            if (subListUp.length == 1)
-                return this._index < subListUp[0] + 1 ? this._index : subListUp[0] + 1;
-            this._index = this.fFindMissedNumber(subListUp);
-        }
-        return this._index;
+    // private _index: number;
+    // fFindMissedNumber(list: number[]) {
+    //     var subListUp: number[] = [];
+    //     var subListBack: number[] = [];
+    //     for (var i = 0; i < Math.floor(list.length / 2); i++) {
+    //         subListUp.push(list[i]);
+    //     }
+    //     for (var i = Math.floor(list.length / 2); i < list.length; i++) {
+    //         subListBack.push(list[i]);
+    //     }
+    //     if ((list[list.length - 1] + list[0]) / 2 > list[Math.floor(list.length / 2)]) {
+    //         if (subListUp[0] + 1 == subListBack[0] && list.length == 2)
+    //             return subListBack[0] - 2;
+    //         if (subListBack.length == 1)
+    //             return this._index < subListBack[0] - 1 ? this._index : subListBack[0] - 1;
+    //         this._index = this.fFindMissedNumber(subListBack);
+    //     }
+    //     if ((list[list.length - 1] + list[0]) / 2 <= list[Math.floor(list.length / 2)]) {
+    //         if (subListUp[0] + 1 == subListBack[0] && list.length == 2)
+    //             return subListUp[0] + 2;
+    //         if (subListUp.length == 1)
+    //             return this._index < subListUp[0] + 1 ? this._index : subListUp[0] + 1;
+    //         this._index = this.fFindMissedNumber(subListUp);
+    //     }
+    //     return this._index;
+    // }
+    findMissedNumber(list: number[]) {
+        var missNumber: number;
+        var isFind = false;
+        this.insertion_sort(list);
+        list.forEach((value: number, index: number) => {
+            if (value != index + 1 && !isFind) {
+                missNumber = index + 1;
+                isFind = true;
+            }
+        });
+
+        return isFind ? missNumber : -1;
     }
-    insertion_sort(unsorted: number[]) {
+
+    private insertion_sort(unsorted: number[]) {
         for (var i = 1; i < unsorted.length; i++) {
             if (unsorted[i - 1] > unsorted[i]) {
                 var temp = unsorted[i];
@@ -407,17 +427,22 @@ export class BookStore extends engine.DisplayObjectContainer {
     }
     ///还有逻辑要完善
     addBookList(bookitems: bookView[]) {
-        if (this.bookItemList == [])
+        if (this.bookItemList == undefined) {
             this.bookItemList = bookitems;
+            // this.numbers = [];
+            this.bookItemList.forEach(element => {
+                this.numbers.push(element.index);
+            });
+        }
         else {
             bookitems.forEach(bookitemselement => {
                 if (this.hasBookItem(bookitemselement) == -1)
                     this.addBook(bookitemselement);
             });
         }
-        this.bookItemList.forEach(element => {
-            this.numbers.push(element.index)
-        });
+        // this.bookItemList.forEach(element => {
+        //     this.numbers.push(element.index)
+        // });
         this.renovateDisplayList();
     }
     ///删除得自己写一下比较逻辑，有问题
@@ -427,6 +452,8 @@ export class BookStore extends engine.DisplayObjectContainer {
             console.error("没有这本书");
             return;
         }
+        var indexView = this.numbers.indexOf(this.bookItemList[index].index);
+        this.numbers.splice(indexView, 1);
         this.bookItemList.splice(index, 1);
         this.renovateDisplayList();
     }
@@ -440,17 +467,21 @@ export class BookStore extends engine.DisplayObjectContainer {
         this.renovateDisplayList();
     }
 
-    changeBook(oldBookItem: bookView | bookResource, newBookItem: bookView) {
-        if (this.hasBookItem(newBookItem) != -1) {
-            alert("新书已经在目录中");
-            return;
+    changeBook(newBookItem: bookView | bookResource, oldBookItem: bookView) {
+        var oldindex = this.hasBookItem(oldBookItem);
+        switch (newBookItem.kind) {
+            case BookType.bookView:
+                var tempBookView = newBookItem as bookView;
+                tempBookView.index = oldBookItem.index;
+                break;
+            case BookType.bookResource:
+                var book = newBookItem as bookResource;
+                var tempBookView = new bookView(book.name, book.id, oldBookItem.index);
+                break;
+            default:
+                return;
         }
-        if (this.hasBookItem(oldBookItem) != -1) {
-            var oldindex = this.hasBookItem(oldBookItem);
-            this.bookItemList.splice(oldindex, 1, newBookItem);
-        } else {
-            this.addBook(newBookItem);
-        }
+        this.bookItemList.splice(oldindex, 1, tempBookView);
         this.renovateDisplayList();
     }
 
