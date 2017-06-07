@@ -33,18 +33,18 @@ class InputField extends React.Component<any, any>{
         this._bookStore.addOrChangeBook(bookitem);
     }
     timerout: any;
-    refresh: boolean = false;
+    // refresh: boolean = false;
     componentDidMount() {
         this.timerout = setInterval(() => {
             this.Isadd = BookStore.optionBar.IsAdd;
             this.IsChange = BookStore.optionBar.IsChange;
-            if ((this.Isadd || this.IsChange) && !this.refresh) {
+            if ((this.Isadd || this.IsChange) ) {
                 this.forceUpdate();
-                this.refresh = true;
+                // this.refresh = true;
             }
-            if (!(this.Isadd || this.IsChange) && this.refresh) {
+            if (!(this.Isadd || this.IsChange) ) {
                 this.forceUpdate();
-                this.refresh = false;
+                // this.refresh = false;
             }
         }, 100);
     }

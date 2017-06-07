@@ -259,6 +259,7 @@ class bookOptionBar extends engine.DisplayObjectContainer {
             // BookStore.getInstance().addBook(book);
             // BookStore.hasBookOptionBar = true;
             this.IsAdd = true;
+            this.IsChange=false;
         });
 
         this.slipic.touchEnable = true;
@@ -267,6 +268,8 @@ class bookOptionBar extends engine.DisplayObjectContainer {
             BookStore.getInstance().removeOptionBar();
             BookStore.getInstance().sliceBook(this._book);
             // BookStore.hasBookOptionBar = false;
+            this.IsAdd=false;
+            this.IsChange=false;
         });
 
         this.changepic.touchEnable = true;
@@ -276,6 +279,7 @@ class bookOptionBar extends engine.DisplayObjectContainer {
             // BookStore.getInstance().changeBook(oldBook, newBook);
             // BookStore.hasBookOptionBar = true;
             this.IsChange = true;
+            this.IsAdd=false;
         });
 
 
@@ -308,7 +312,7 @@ export class BookStore extends engine.DisplayObjectContainer {
     removeOptionBar() {
         this.removeChild(BookStore.optionBar);
         BookStore.hasBookOptionBar = false;
-        this.renovateDataList();
+        this.renovateDisplayList();
     }
     static getInstance() {
         if (BookStore.instance == null)
