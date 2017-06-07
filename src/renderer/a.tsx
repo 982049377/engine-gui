@@ -247,12 +247,18 @@ class bookOptionBar extends engine.DisplayObjectContainer {
     setbook(book: bookResource) {
         this._book = book;
     }
+    getbook() {
+        return this._book;
+    }
+    IsChange = false;
+    IsAdd = false;
     addevent() {
         this.addpic.touchEnable = true;
         this.addpic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
             // var book: bookItem = new bookItem("book04", "04", 4);
             // BookStore.getInstance().addBook(book);
             // BookStore.hasBookOptionBar = true;
+            this.IsAdd = true;
         });
 
         this.slipic.touchEnable = true;
@@ -269,12 +275,15 @@ class bookOptionBar extends engine.DisplayObjectContainer {
             // var oldBook = BookStore.getInstance().bookItemList[0];
             // BookStore.getInstance().changeBook(oldBook, newBook);
             // BookStore.hasBookOptionBar = true;
+            this.IsChange = true;
         });
 
 
         this.retpic.touchEnable = true;
         this.retpic.addEventListener(engine.MyTouchEvent.TouchClick, () => {
             BookStore.getInstance().removeOptionBar();
+            this.IsAdd = false;
+            this.IsChange = false;
         });
     }
 }
