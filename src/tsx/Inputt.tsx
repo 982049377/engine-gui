@@ -57,7 +57,7 @@ class InputField extends React.Component<any, any>{
         // this.Isadd = BookStore.hasBookOptionBar;
         // this.IsChange = BookStore.hasBookOptionBar;
         // var IsDisplay = true;
-        console.log("render");
+        // console.log("render");
         if (this.Isadd) {
             return (
                 <div>

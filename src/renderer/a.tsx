@@ -6,6 +6,8 @@ import * as ReactDOM from 'react-dom';
 import InputField from '../tsx/Inputt';
 
 export let run = () => {
+    console.log(__dirname);
+    
     let canvas = document.getElementById("app") as HTMLCanvasElement;
     let stage = engine.run(canvas);
 
@@ -28,7 +30,7 @@ export let run = () => {
     var bookstore: BookStore = BookStore.getInstance();
 
     let projectUserPick = path.resolve(__dirname, "../../../canvas/engine_test");
-
+    
     // console.log(projectUserPick);
     if (!validProject(projectUserPick)) {
         alert("不是一个有效的Unity项目");
@@ -41,7 +43,7 @@ export let run = () => {
             console.log(data.toString());
             engine.MysetTimeout(() => {
                 if (data.toString().indexOf("Server listening to") >= 0) {
-                    iframe = document.getElementById("iframe") as HTMLIFrameElement;
+                    iframe = document.getElementById('iframe') as HTMLIFrameElement;
                     iframe.src = "http://localhost:1337/index.html";
                     // iframe.src = "http://localhost:1341";
                 }
@@ -98,6 +100,7 @@ export let run = () => {
 
 
     let booksStore = path.resolve(__dirname, "../../");
+
     let configBooksStorePath = path.join(booksStore, "date.config")
     // alert(booksStore);
     if (!validProject(booksStore))
@@ -131,6 +134,22 @@ export let run = () => {
     // bookstore.bookItemList[0].addOptionBar();
     // bookstore.bookItemList = bookitems;
     stage.addChild(bookstore);
+
+    // var DispalyList = '';
+
+    // DispalyList = MapDisplay(stage);
+    // function MapDisplay(displayObject: engine.DisplayObject) {
+    //     DispalyList.match(displayObject.type);
+    //     if(displayObject)
+
+    //     return DispalyList;
+    // }
+
+
+
+
+
+
     ReactDOM.render(
         <InputField />, document.getElementById('inputtt')
     )
@@ -259,7 +278,7 @@ class bookOptionBar extends engine.DisplayObjectContainer {
             // BookStore.getInstance().addBook(book);
             // BookStore.hasBookOptionBar = true;
             this.IsAdd = true;
-            this.IsChange=false;
+            this.IsChange = false;
         });
 
         this.slipic.touchEnable = true;
@@ -268,8 +287,8 @@ class bookOptionBar extends engine.DisplayObjectContainer {
             BookStore.getInstance().removeOptionBar();
             BookStore.getInstance().sliceBook(this._book);
             // BookStore.hasBookOptionBar = false;
-            this.IsAdd=false;
-            this.IsChange=false;
+            this.IsAdd = false;
+            this.IsChange = false;
         });
 
         this.changepic.touchEnable = true;
@@ -279,7 +298,7 @@ class bookOptionBar extends engine.DisplayObjectContainer {
             // BookStore.getInstance().changeBook(oldBook, newBook);
             // BookStore.hasBookOptionBar = true;
             this.IsChange = true;
-            this.IsAdd=false;
+            this.IsAdd = false;
         });
 
 
